@@ -69,46 +69,41 @@ col1, col2 = st.columns([1, 1])
 with col1:
     st.header("🔢 เครื่องคิดเลขคณิตศาสตร์")
     
-    # ช่องแสดงผล (State สำหรับเก็บค่าที่พิมพ์)
+    # 1. สร้างตัวแปรไว้จำค่าตัวเลขที่พิมพ์ (ถ้ายังไม่มีให้สร้างใหม่)
     if 'calc_input' not in st.session_state:
         st.session_state.calc_input = ""
     
-    # ใช้ text_input เพื่อให้พิมพ์หรือกดปุ่มก็ได้
-    calc_display = st.text_input("ผลลัพธ์", value=st.session_state.calc_input, key="calc_display_input")
-
-    # ฟังก์ชันสำหรับจัดการการกดปุ่ม
-    def button_click(char):
+    # 2. ฟังก์ชันจัดการเมื่อกดปุ่ม
+    def handle_click(char):
         if char == "C":
             st.session_state.calc_input = ""
         elif char == "=":
             try:
-                # ใช้โมเดลพื้นฐานในการคำนวณ เพื่อให้แม่นยำกว่าการใช้ eval() ของ Python เอง
-                response = base_model.generate_content(f"Calculate the value of: {st.session_state.calc_input}. Only output the final number.")
+                # ส่งไปให้ AI คำนวณเพื่อความแม่นยำ
+                prompt = f"Calculate this and return only the number: {st.session_state.calc_input}"
+                response = base_model.generate_content(prompt)
                 st.session_state.calc_input = response.text.strip()
-            except Exception as e:
-                st.session_state.calc_input = f"Error: {e}"
+            except:
+                st.session_state.calc_input = "Error"
         else:
             st.session_state.calc_input += str(char)
 
-    # วางปุ่มเป็นตาราง [4x5]
+    # 3. ช่องแสดงผล (ห้ามลบอันนี้ เพราะมันจะโชว์ตัวเลขที่เรากด)
+    st.text_input("Display", value=st.session_state.calc_input, key="display", disabled=True)
+
+    # 4. ปุ่มกด
     buttons = [
         ["7", "8", "9", "/"],
         ["4", "5", "6", "*"],
         ["1", "2", "3", "-"],
-        ["0", ".", "C", "+"],
-        ["sqrt(", "pow(", "sin(", ")"],
-        ["cos(", "tan(", "log(", "="]
+        ["0", ".", "C", "="]
     ]
 
-    # สร้างปุ่มด้วย streamlit.columns และ streamlit.button
     for row in buttons:
-        btn_cols = st.columns(4)
+        cols = st.columns(4)
         for i, char in enumerate(row):
-            with btn_cols[i]:
-                st.button(char, key=f"btn_{char}", on_click=button_click, args=(char,))
-
-    st.caption("เคล็ดลับ: 'C' เพื่อล้างค่า, '=' เพื่อแสดงผลลัพธ์")
-
+            # เมื่อกดปุ่ม ให้ไปเรียกฟังก์ชัน handle_click
+            cols[i].button(char, on_click=handle_click, args=(char,), use_container_width=True)
 
 # --- ฝั่งที่ 2: AI ช่วยแก้โจทย์ปัญหาคณิตศาสตร์และสมการพร้อมอธิบาย ---
 with col2:
