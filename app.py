@@ -34,13 +34,18 @@ def handle_click(char):
     elif char == "=":
         if st.session_state.calc_input:
             try:
-                # ส่งให้ AI คำนวณ
-                res = model.generate_content(f"Calculate and return only the number: {st.session_state.calc_input}")
-                st.session_state.calc_input = res.text.strip()
-            except:
-                st.session_state.calc_input = "Error"
+                # เปลี่ยนจากถาม AI มาใช้ Python คำนวณเอง (เร็วกว่า 100 เท่า)
+                # เราใช้ eval() เพื่อคำนวณสมการคณิตศาสตร์โดยตรง
+                result = eval(st.session_state.calc_input)
+                st.session_state.calc_input = str(result)
+            except Exception:
+                # ถ้า Python งงกับสัญลักษณ์ค่อยส่งไปให้ AI ช่วย (Fallback)
+                try:
+                    res = model.generate_content(f"Calculate and return only the number: {st.session_state.calc_input}")
+                    st.session_state.calc_input = res.text.strip()
+                except:
+                    st.session_state.calc_input = "Error"
     else:
-        # ป้องกันการกดตัวเลขซ้ำซ้อนจนล้น
         st.session_state.calc_input += str(char)
 
 # --- 4. หน้าจอ UI ---
