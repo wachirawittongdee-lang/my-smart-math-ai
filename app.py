@@ -34,20 +34,22 @@ def handle_click(char):
     elif char == "=":
         if st.session_state.calc_input:
             try:
-                # เปลี่ยนจากถาม AI มาใช้ Python คำนวณเอง (เร็วกว่า 100 เท่า)
-                # เราใช้ eval() เพื่อคำนวณสมการคณิตศาสตร์โดยตรง
-                result = eval(st.session_state.calc_input)
+                # แก้ไขสัญลักษณ์เพื่อให้ Python คำนวณได้ถูกต้อง
+                # ใน Python ยกกำลังใช้ ** ไม่ใช่ ^
+                formula = st.session_state.calc_input.replace("^", "**")
+                
+                # คำนวณด้วย Python (เร็ว)
+                result = eval(formula)
                 st.session_state.calc_input = str(result)
             except Exception:
-                # ถ้า Python งงกับสัญลักษณ์ค่อยส่งไปให้ AI ช่วย (Fallback)
+                # ถ้า Python งง (เช่น โจทย์ยากเกินไป) ให้ AI ช่วย
                 try:
-                    res = model.generate_content(f"Calculate and return only the number: {st.session_state.calc_input}")
+                    res = model.generate_content(f"Calculate this math: {st.session_state.calc_input}. Return only the final numeric answer.")
                     st.session_state.calc_input = res.text.strip()
                 except:
                     st.session_state.calc_input = "Error"
     else:
         st.session_state.calc_input += str(char)
-
 # --- 4. หน้าจอ UI ---
 st.title("🧮 เครื่องคิดเลขคณิตศาสตร์อัจฉริยะ")
 col1, col2 = st.columns([1, 1.5])
@@ -57,13 +59,14 @@ with col1:
     # แสดงตัวเลขที่กำลังพิมพ์
     st.subheader(f"📟 {st.session_state.calc_input if st.session_state.calc_input else '0'}")
     
+   # ปรับแผงปุ่มใหม่ให้ครบเครื่อง
     buttons = [
-        ["7", "8", "9", "/"],
-        ["4", "5", "6", "*"],
-        ["1", "2", "3", "-"],
-        ["0", ".", "C", "="]
+        ["(", ")", "^", "/"],  # แถวบนสุด: วงเล็บ, ยกกำลัง, หาร
+        ["7", "8", "9", "*"],  # คูณ
+        ["4", "5", "6", "-"],  # ลบ
+        ["1", "2", "3", "+"],  # บวก (มาแล้ว!)
+        ["0", ".", "C", "="]   # แถวล่างสุด
     ]
-    
     for row in buttons:
         cols = st.columns(4)
         for i, char in enumerate(row):
