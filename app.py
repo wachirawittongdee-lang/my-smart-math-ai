@@ -43,7 +43,7 @@ st.markdown("""
 # ปลอดภัยไว้ก่อน: การวาง API Key โดยตรงในโค้ดไม่แนะนำสำหรับการใช้งานจริง
 # แต่สำหรับการเรียนรู้ในขั้นตอนนี้ คุณสามารถวางรหัสที่คุณมีลงไปได้ครับ
 # (ลบรหัสของคุณออกเพื่อความปลอดภัยในการสาธิต)
-API_KEY = "AIzaSyCuueL5MhvlWHFQURkyp9_XvBH3_47GGUA"
+API_KEY = st.secrets["MY_API_KEY"]
 genai.configure(api_key=API_KEY)
 
 
